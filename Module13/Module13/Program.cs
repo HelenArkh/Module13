@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
+using System.Threading;
 
 namespace Module13
 {
@@ -15,43 +17,79 @@ namespace Module13
             ["Игорь"] = new Contact(79990000000, "igor@example.com"),
             ["Андрей"] = new Contact(79990000001, "andrew@example.com"),
         };
+
+       
+
+        // объявим потокобезопасную очередь (полностью идентична обычной очереди, но
+        // позволяет безопасный доступ
+        // из разных потоков)
+        public static ConcurrentQueue<string> words = new ConcurrentQueue<string>();
+
+        // объявим список в виде статической переменной
+        public static LinkedList<string> LinkedList = new LinkedList<string>();
         static void Main(string[] args)
         {
-            // Запустим таймер
-            var watchTwo = Stopwatch.StartNew();
+            // Добавим несколько элементов
+            LinkedList.AddFirst("Лиса");
+            LinkedList.AddFirst("Волк");
+            LinkedList.AddFirst("Заяц");
+            var mouse = LinkedList.AddFirst("Мышь");
 
-            // Выполним вставку
-            SortedPhoneBook.TryAdd("Диана", new Contact(79160000002, "diana@example.com"));
+            GoOnwards(); //   Прямой проход списка
+            GoBackwards(); // Обратный проход списка
 
-            // Выведем результат
-            Console.WriteLine($"Вставка в сортированный словарь: {watchTwo.Elapsed.TotalMilliseconds}  мс");
+            // Вставка нового элемента
+            LinkedList.AddAfter(mouse, "Медведь");
+
+            Console.WriteLine();
+            Console.WriteLine();
+            Console.WriteLine("Выведем список ещё раз после вставки");
+            Console.WriteLine();
+
+
+            GoOnwards(); //   Прямой проход списка
+            GoBackwards(); // Обратный проход списка
         }
 
-
-
-        static void PrintCollection(SortedSet<char> ss, string s)
+        static void GoOnwards()
         {
-            Console.WriteLine(s);
-            foreach (char ch in ss)
-                Console.Write(ch + " ");
-            Console.WriteLine("\n");
+            LinkedListNode<string> node;
+
+            Console.WriteLine("Элементы коллекции в прямом направлении: ");
+            for (node = LinkedList.First; node != null; node = node.Next)
+                Console.Write(node.Value + " ");
         }
 
-        
-        private static void GetMissing(List<string> months, ArrayList missing)
+        static void GoBackwards()
         {
-            // инициализируем массив для 7 нужных нам недостающих элементов
-            var missedArray = new string[7];
+            LinkedListNode<string> node;
 
-            // извлекаем эти элементы из ArrayList, и копируем в массив
-            missing.GetRange(4, 7).CopyTo(missedArray);
+            Console.WriteLine("\n\nЭлементы коллекции в обратном направлении: ");
+            for (node = LinkedList.Last; node != null; node = node.Previous)
+                Console.Write(node.Value + " ");
+        }
 
-            // Добавляем наш массив в конец списка
-            months.AddRange(missedArray);
+        // метод, который обрабатывает и разбирает нашу очередь в отдельном потоке
+        // ( для выполнения задания изменять его не нужно )
+        static void StartQueueProcessing()
+        {
+            new Thread(() =>
+            {
+                Thread.CurrentThread.IsBackground = true;
 
-            // смотрим, что получилось
-            foreach (var month in months)
-                Console.WriteLine(month);
+                while (true)
+                {
+                    Thread.Sleep(5000);
+                    if (words.TryDequeue(out var element))
+                        Console.WriteLine("======>  " + element + " прошел очередь");
+                }
+
+            }).Start();
         }
     }
-}
+
+
+
+        
+    }
+
