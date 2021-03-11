@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 
@@ -8,45 +9,25 @@ namespace Module13
 {
     class Program
     {
+        //  Объявим  сортированный  словарь
+        private static SortedDictionary<string, Contact> SortedPhoneBook = new SortedDictionary<String, Contact>()
+        {
+            ["Игорь"] = new Contact(79990000000, "igor@example.com"),
+            ["Андрей"] = new Contact(79990000001, "andrew@example.com"),
+        };
         static void Main(string[] args)
         {
-            // Запускаем бесконечный цикл
-            while (true)
-            {
-                Console.WriteLine("Введите текст:");
+            // Запустим таймер
+            var watchTwo = Stopwatch.StartNew();
 
-                // Сохраняем предложение в строку
-                var sentence = Console.ReadLine();
-                // сохраняем в массив char
-                var characters = sentence.ToCharArray();
+            // Выполним вставку
+            SortedPhoneBook.TryAdd("Диана", new Contact(79160000002, "diana@example.com"));
 
-            var symbols = new HashSet<char>();
-
-            // добавляем во множество. Сохраняются только неповторяющиеся символы
-            foreach (var symbol in characters)
-                symbols.Add(symbol);
-
-                // Выводим результат
-                Console.WriteLine($"Всего {symbols.Count} уникальных символов");
-
-                // сохраняем знаки препинания в массив Char
-                var signs = new[] { ',', ' ', '.' };
-
-            // сохраняем числовые символы в массив Char
-            var numbers = new[] { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9' };
-
-            //  Проверяем, есть ли цифры
-            bool containsNumbers = symbols.Overlaps(numbers);
-            Console.WriteLine($"Коллекция содержит цифры: {containsNumbers}");
-
-            // Отбрасываем знаки препинания и заново считаем
-            symbols.ExceptWith(signs);
-            Console.WriteLine($"Символов без знаков препинания: {symbols.Count}");
-
-                Console.WriteLine();
-                Console.WriteLine();
-            }
+            // Выведем результат
+            Console.WriteLine($"Вставка в сортированный словарь: {watchTwo.Elapsed.TotalMilliseconds}  мс");
         }
+
+
 
         static void PrintCollection(SortedSet<char> ss, string s)
         {
@@ -56,31 +37,7 @@ namespace Module13
             Console.WriteLine("\n");
         }
 
-        private static void AddUnique(Contact newContact, List<Contact> phoneBook)
-        {
-            bool alreadyExists = false;
-
-            // пробегаемся по списку и смотрим, есть ли уже с таким именем
-            foreach (var contact in phoneBook)
-            {
-                if (contact.Name == newContact.Name)
-                {
-                    //  если вдруг находим  -  выставляем флаг и прерываем цикл
-                    alreadyExists = true;
-                    break;
-                }
-            }
-
-            if (!alreadyExists)
-                phoneBook.Add(newContact);
-
-            //  сортируем список по имени
-            phoneBook.Sort((x, y) => String.Compare(x.Name, y.Name, StringComparison.Ordinal));
-
-            foreach (var contact in phoneBook)
-                Console.WriteLine(contact.Name + ": " + contact.PhoneNumber);
-        }
-
+        
         private static void GetMissing(List<string> months, ArrayList missing)
         {
             // инициализируем массив для 7 нужных нам недостающих элементов
